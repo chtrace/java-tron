@@ -78,21 +78,21 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
   public synchronized void put(byte[] key, byte[] value) {
     long start = System.currentTimeMillis();
     head().put(key, value);
-    Manager.calculate.addAction(dbName,"put", System.currentTimeMillis() - start);
+    Manager.calculate.addAction(dbName,"write", System.currentTimeMillis() - start);
   }
 
   @Override
   public synchronized void delete(byte[] key) {
     long start = System.currentTimeMillis();
     head().remove(key);
-    Manager.calculate.addAction(dbName,"delete", System.currentTimeMillis() - start);
+    Manager.calculate.addAction(dbName,"write", System.currentTimeMillis() - start);
   }
 
   @Override
   public synchronized byte[] get(byte[] key) throws ItemNotFoundException {
     long start = System.currentTimeMillis();
     byte[] value = getUnchecked(key);
-    Manager.calculate.addAction(dbName,"get", System.currentTimeMillis() - start);
+   // Manager.calculate.addAction(dbName,"read", System.currentTimeMillis() - start);
 
     if (value == null) {
       throw new ItemNotFoundException();
@@ -105,7 +105,7 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
   public synchronized byte[] getUnchecked(byte[] key) {
     long start = System.currentTimeMillis();
     byte[] result = head().get(key);
-    Manager.calculate.addAction(dbName,"getUnchecked", System.currentTimeMillis() - start);
+    Manager.calculate.addAction(dbName,"read", System.currentTimeMillis() - start);
     return result;
 
   }
@@ -114,7 +114,7 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
   public synchronized boolean has(byte[] key) {
     long start = System.currentTimeMillis();
     boolean has = getUnchecked(key) != null;
-    Manager.calculate.addAction(dbName,"has", System.currentTimeMillis() - start);
+   // Manager.calculate.addAction(dbName,"has", System.currentTimeMillis() - start);
     return has;
   }
 
