@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import org.tron.common.utils.ByteUtil;
 import org.tron.core.config.args.Args;
+import org.tron.core.db.Calculate;
+import org.tron.core.db.Manager;
 import org.tron.core.db.common.WrappedByteArray;
 import org.tron.core.db2.common.DB;
 import org.tron.core.db2.common.IRevokingDB;
@@ -74,17 +76,24 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
 
   @Override
   public synchronized void put(byte[] key, byte[] value) {
+    long start = System.currentTimeMillis();
     head().put(key, value);
+    Manager.calculate.addAction(dbName,"put", System.currentTimeMillis() - start);
   }
 
   @Override
   public synchronized void delete(byte[] key) {
+    long start = System.currentTimeMillis();
     head().remove(key);
+    Manager.calculate.addAction(dbName,"delete", System.currentTimeMillis() - start);
   }
 
   @Override
   public synchronized byte[] get(byte[] key) throws ItemNotFoundException {
+    long start = System.currentTimeMillis();
     byte[] value = getUnchecked(key);
+    Manager.calculate.addAction(dbName,"get", System.currentTimeMillis() - start);
+
     if (value == null) {
       throw new ItemNotFoundException();
     }
@@ -94,12 +103,19 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
 
   @Override
   public synchronized byte[] getUnchecked(byte[] key) {
-    return head().get(key);
+    long start = System.currentTimeMillis();
+    byte[] result = head().get(key);
+    Manager.calculate.addAction(dbName,"getUnchecked", System.currentTimeMillis() - start);
+    return result;
+
   }
 
   @Override
   public synchronized boolean has(byte[] key) {
-    return getUnchecked(key) != null;
+    long start = System.currentTimeMillis();
+    boolean has = getUnchecked(key) != null;
+    Manager.calculate.addAction(dbName,"has", System.currentTimeMillis() - start);
+    return has;
   }
 
   @Override
@@ -115,6 +131,8 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
 
   //for blockstore
   private synchronized Set<byte[]> getlatestValues(Snapshot head, long limit) {
+    long start = System.currentTimeMillis();
+
     if (limit <= 0) {
       return Collections.emptySet();
     }
@@ -140,11 +158,15 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
       }
     }
 
+    Manager.calculate.addAction(dbName,"getlatestValues", System.currentTimeMillis() - start);
+
     return result;
   }
 
   //for blockstore
   private Set<byte[]> getValuesNext(Snapshot head, byte[] key, long limit) {
+    long start = System.currentTimeMillis();
+
     if (limit <= 0) {
       return Collections.emptySet();
     }
@@ -169,14 +191,17 @@ public class RevokingDBWithCachingNewValue implements IRevokingDB {
     }
 
     levelDBMap.putAll(collection);
-
-    return levelDBMap.entrySet().stream()
+    Set<byte[]> result = levelDBMap.entrySet().stream()
         .sorted((e1, e2) -> ByteUtil.compare(e1.getKey().getBytes(), e2.getKey().getBytes()))
         .filter(e -> ByteUtil.greaterOrEquals(e.getKey().getBytes(), key))
         .limit(limit)
         .map(Map.Entry::getValue)
         .map(WrappedByteArray::getBytes)
         .collect(Collectors.toSet());
+    Manager.calculate.addAction(dbName,"getValuesNext", System.currentTimeMillis() - start);
+
+
+    return result;
   }
 
   @Override

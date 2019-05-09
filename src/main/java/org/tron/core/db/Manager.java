@@ -222,6 +222,8 @@ public class Manager {
 
   private Set<String> ownerAddressSet = new HashSet<>();
 
+  public static Calculate calculate = new Calculate();
+
   public WitnessStore getWitnessStore() {
     return this.witnessStore;
   }
@@ -617,6 +619,8 @@ public class Manager {
         emptyBlockCount.get(),
         System.currentTimeMillis() - start
     );
+    calculate.printCost();
+    calculate.reset();
   }
 
   public AccountStore getAccountStore() {
