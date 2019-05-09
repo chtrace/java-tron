@@ -34,10 +34,10 @@ public class Calculate {
    public void printCost() {
      for (Entry p : mapCost.entrySet()) {
        AtomicLong time = mapTime.get(p.getKey());
-       logger.info("name {}, cost {}, time {}", p.getKey(), p.getValue(), time);
+       logger.info("test performance name {}, cost {}, time {}", p.getKey(), p.getValue(), time);
      }
      for (Entry p : names.entrySet()) {
-       logger.info("db {}, time {}", p.getKey(), p.getValue());
+       logger.info("test performance db {}, time {}", p.getKey(), p.getValue());
      }
    }
    public void reset() {
