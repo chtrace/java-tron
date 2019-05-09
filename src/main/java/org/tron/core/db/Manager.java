@@ -619,8 +619,6 @@ public class Manager {
         emptyBlockCount.get(),
         System.currentTimeMillis() - start
     );
-    calculate.printCost();
-    calculate.reset();
   }
 
   public AccountStore getAccountStore() {
@@ -1062,6 +1060,8 @@ public class Manager {
         block.getNum(),
         System.currentTimeMillis() - start,
         block.getTransactions().size());
+    calculate.printCost();
+    calculate.reset();
   }
 
   public void updateDynamicProperties(BlockCapsule block) {
