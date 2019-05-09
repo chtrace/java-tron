@@ -1060,7 +1060,7 @@ public class Manager {
         block.getNum(),
         System.currentTimeMillis() - start,
         block.getTransactions().size());
-    calculate.printCost();
+    calculate.printCost(block.getNum());
     calculate.reset();
   }
 
