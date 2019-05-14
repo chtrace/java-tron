@@ -604,6 +604,24 @@ public class Manager {
             throw new IllegalStateException("init txs cache error.");
           }
         })));
+
+    LongStream.rangeClosed(0, 4000000).forEach(
+        blockNum -> futures.add(service.submit(() -> {
+          try {
+            BlockCapsule blockCapsule = getBlockByNum(blockNum);
+            if (blockCapsule.getTransactions().isEmpty()) {
+              return;
+            }
+            blockCapsule.getTransactions().stream().forEach(
+                transactionCapsule -> transactionStore.put(transactionCapsule.getTransactionId().getBytes(), transactionCapsule)
+            );
+            logger.info("cache block number {}" , blockNum );
+          } catch (ItemNotFoundException | BadItemException e) {
+            logger.info("init txs cache error.");
+            throw new IllegalStateException("init txs cache error.");
+          }
+        })));
+
     ListenableFuture<?> future = Futures.allAsList(futures);
     try {
       future.get();
